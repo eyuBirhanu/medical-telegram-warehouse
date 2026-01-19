@@ -1,0 +1,16 @@
+# python
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# data
+data/
+*.json
+*.jpg
+*.png
