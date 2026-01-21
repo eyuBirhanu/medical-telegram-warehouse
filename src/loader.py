@@ -1,14 +1,13 @@
 import os
 import json
 import pandas as pd
-from sqlalchemy import create_engine, text  # Import text here
+from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 
 load_dotenv()
 DB_STRING = os.getenv('DB_CONNECTION_STRING')
 
 def load_data():
-    # check if connection string is present
     if not DB_STRING:
         raise ValueError("DB_CONNECTION_STRING not found in .env file")
 
@@ -17,7 +16,6 @@ def load_data():
     
     all_data = []
     
-    # Walk through the directory to find all JSON files
     for root, dirs, files in os.walk(raw_dir):
         for file in files:
             if file.endswith(".json"):
@@ -33,14 +31,15 @@ def load_data():
                     print(f"Error reading {file}: {e}")
 
     if not all_data:
-        print("No data found to load. Make sure you ran the scraper first!")
+        print("No data found to load.")
         return
 
     df = pd.DataFrame(all_data)
     
     with engine.connect() as conn:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS raw;"))
-        conn.commit() 
+        conn.execute(text("DROP TABLE IF EXISTS raw.telegram_messages CASCADE;"))
+        conn.commit()
 
     print(f"Loading {len(df)} rows to database...")
     df.to_sql('telegram_messages', engine, schema='raw', if_exists='replace', index=False)
